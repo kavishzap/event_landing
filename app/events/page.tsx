@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { EventCard } from "@/components/event-card"
 import { getPublishedEventsApp } from "@/lib/supabase/events"
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useWindowFocus } from "@/hooks/use-window-focus"
 
 function EventsPageContent() {
   const searchParams = useSearchParams()
@@ -21,8 +22,8 @@ function EventsPageContent() {
   const [sortBy, setSortBy] = useState<string>("soonest")
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    getPublishedEventsApp()
+  const fetchEvents = useCallback(() => {
+    return getPublishedEventsApp()
       .then((fetchedEvents) => {
         setEvents(fetchedEvents)
         setLoading(false)
@@ -32,6 +33,13 @@ function EventsPageContent() {
         setLoading(false)
       })
   }, [])
+
+  useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
+
+  // Refetch events when tab/window gains focus
+  useWindowFocus(fetchEvents)
 
   useEffect(() => {
     let filtered = [...events]

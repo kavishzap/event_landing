@@ -1,13 +1,14 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import Image from "next/image"
 import { ProtectedRoute } from "@/components/protected-route"
 import { isEventInPast } from "@/lib/utils-booking"
 import { getUserBookings } from "@/lib/supabase/enrollments"
 import { useAuth } from "@/contexts/auth-context"
 import type { Booking } from "@/lib/types"
+import { useWindowFocus } from "@/hooks/use-window-focus"
 import { formatDate, formatTime, formatPrice } from "@/lib/utils-booking"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -46,9 +47,9 @@ function MyTicketsContent() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchBookings = useCallback(() => {
     if (session?.userId) {
-      getUserBookings(session.userId)
+      return getUserBookings(session.userId)
         .then((fetchedBookings) => {
           setBookings(fetchedBookings)
           setLoading(false)
@@ -59,8 +60,16 @@ function MyTicketsContent() {
         })
     } else {
       setLoading(false)
+      return Promise.resolve()
     }
   }, [session?.userId])
+
+  useEffect(() => {
+    fetchBookings()
+  }, [fetchBookings])
+
+  // Refetch bookings when tab/window gains focus
+  useWindowFocus(fetchBookings, { enabled: !!session?.userId })
 
   // Sort bookings by booking date (createdAt) - most recent first
   const sortedBookings = [...bookings].sort((a, b) => {

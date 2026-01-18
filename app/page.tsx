@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { EventCard } from "@/components/event-card"
 import { getPublishedEventsApp } from "@/lib/supabase/events"
 import type { Event } from "@/lib/types"
@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useWindowFocus } from "@/hooks/use-window-focus"
 
 export default function HomePage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -18,8 +19,8 @@ export default function HomePage() {
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    getPublishedEventsApp()
+  const fetchEvents = useCallback(() => {
+    return getPublishedEventsApp()
       .then((fetchedEvents) => {
         setEvents(fetchedEvents)
         setLoading(false)
@@ -29,6 +30,13 @@ export default function HomePage() {
         setLoading(false)
       })
   }, [])
+
+  useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
+
+  // Refetch events when tab/window gains focus
+  useWindowFocus(fetchEvents)
 
   // Filter and sort events
   useEffect(() => {

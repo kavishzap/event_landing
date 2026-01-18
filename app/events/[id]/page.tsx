@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { getEventByIdApp } from "@/lib/supabase/events"
@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { formatDate, formatTime, formatPrice, calculateFees } from "@/lib/utils-booking"
 import { useToast } from "@/hooks/use-toast"
 import { canVote, hasUserVoted, createVote, getEventWithVotes } from "@/lib/supabase/api"
+import { useWindowFocus } from "@/hooks/use-window-focus"
 
 export default function EventDetailsPage() {
   const params = useParams()
@@ -29,61 +30,68 @@ export default function EventDetailsPage() {
   const [canUserVote, setCanUserVote] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
 
-  useEffect(() => {
-    if (params.id) {
-      setLoading(true)
-      getEventByIdApp(params.id as string)
-        .then((found) => {
-          if (found) {
-            setEvent(found as Event & { eventId?: string; eventType?: 'defined' | 'undefined' })
-            // Initialize quantities
-            const initial: Record<string, number> = {}
-            found.ticketTiers.forEach((tier) => {
-              initial[tier.name] = 0
-            })
-            setQuantities(initial)
-            
-            // Check if undefined event and load voting info
-            if (found.eventId) {
-              getEventWithVotes(found.eventId).then((eventWithVotes) => {
-                if (eventWithVotes) {
-                  setEvent((prev) => ({
-                    ...prev!,
-                    eventType: eventWithVotes.type,
-                    votingStatus: eventWithVotes.voting_status,
-                  }))
-                  setVotesCount(eventWithVotes.votes_count)
+  const fetchEvent = useCallback(() => {
+    if (!params.id) return Promise.resolve()
+
+    setLoading(true)
+    return getEventByIdApp(params.id as string)
+      .then((found) => {
+        if (found) {
+          setEvent(found as Event & { eventId?: string; eventType?: 'defined' | 'undefined' })
+          // Initialize quantities
+          const initial: Record<string, number> = {}
+          found.ticketTiers.forEach((tier) => {
+            initial[tier.name] = 0
+          })
+          setQuantities(initial)
+          
+          // Check if undefined event and load voting info
+          if (found.eventId) {
+            getEventWithVotes(found.eventId).then((eventWithVotes) => {
+              if (eventWithVotes) {
+                setEvent((prev) => ({
+                  ...prev!,
+                  eventType: eventWithVotes.type,
+                  votingStatus: eventWithVotes.voting_status,
+                }))
+                setVotesCount(eventWithVotes.votes_count)
+                
+                if (eventWithVotes.type === 'undefined') {
+                  // Check if voting is open - allow voting when voting_status is 'open'
+                  const isVotingOpen = eventWithVotes.voting_status === 'open'
                   
-                  if (eventWithVotes.type === 'undefined') {
-                    // Check if voting is open - allow voting when voting_status is 'open'
-                    const isVotingOpen = eventWithVotes.voting_status === 'open'
-                    
-                    if (session?.userId) {
-                      hasUserVoted(found.eventId, session.userId).then(setHasVoted)
-                      if (isVotingOpen) {
-                        // If voting is open, allow voting (unless already voted)
-                        setCanUserVote(true)
-                      } else {
-                        // Otherwise use the canVote function to check voting window
-                        canVote(found.eventId).then(setCanUserVote)
-                      }
+                  if (session?.userId) {
+                    hasUserVoted(found.eventId, session.userId).then(setHasVoted)
+                    if (isVotingOpen) {
+                      // If voting is open, allow voting (unless already voted)
+                      setCanUserVote(true)
                     } else {
-                      // If not logged in, set canUserVote based on voting status
-                      setCanUserVote(isVotingOpen)
+                      // Otherwise use the canVote function to check voting window
+                      canVote(found.eventId).then(setCanUserVote)
                     }
+                  } else {
+                    // If not logged in, set canUserVote based on voting status
+                    setCanUserVote(isVotingOpen)
                   }
                 }
-              })
-            }
+              }
+            })
           }
-          setLoading(false)
-        })
-        .catch((error) => {
-          console.error("Error fetching event:", error)
-          setLoading(false)
-        })
-    }
+        }
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Error fetching event:", error)
+        setLoading(false)
+      })
   }, [params.id, session?.userId])
+
+  useEffect(() => {
+    fetchEvent()
+  }, [fetchEvent])
+
+  // Refetch event when tab/window gains focus
+  useWindowFocus(fetchEvent)
 
   const handleVote = async () => {
     if (!event?.eventId || !session?.userId) return
