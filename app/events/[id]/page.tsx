@@ -130,7 +130,7 @@ export default function EventDetailsPage() {
           <h1 className="text-3xl font-bold mb-4">Event Not Found</h1>
           <p className="text-muted-foreground mb-6">The event you're looking for doesn't exist.</p>
           <Button asChild>
-            <a href="/events">Browse Events</a>
+            <a href="/">Go Home</a>
           </Button>
         </div>
       </div>

@@ -49,7 +49,7 @@ function CheckoutContent() {
     if (stored) {
       setCheckoutData(JSON.parse(stored))
     } else {
-      router.push("/events")
+      router.push("/")
     }
   }, [router])
 

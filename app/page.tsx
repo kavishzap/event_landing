@@ -166,9 +166,6 @@ export default function HomePage() {
           <div className="container mx-auto px-6 sm:px-8 lg:px-12 xl:px-16 py-12 text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to Digital Factory Events</h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-6">Discover amazing events happening near you</p>
-            <Button size="lg" className="bg-green-600 hover:bg-green-700" asChild>
-              <a href="/events">Browse Events</a>
-            </Button>
           </div>
         )}
       </section>
