@@ -1,0 +1,72 @@
+import type { Event, User } from "./types"
+
+export const MOCK_EVENTS: Event[] = [
+  {
+    title: "Weekly Football Match",
+    slug: "weekly-football-match",
+    category: "Football",
+    date: "2026-01-24",
+    time: "18:00",
+    location: "Community Sports Ground, Manchester",
+    coverImage: "/football-stadium-match-day.jpg",
+    priceFrom: 15,
+    ticketTiers: [{ name: "Regular", price: 15, capacity: 40, remaining: 22 }],
+    shortDescription: "Join us for our weekly casual football match. All skill levels welcome!",
+    ageRestriction: "16+",
+    featured: true,
+  },
+  {
+    title: "End of Year Celebration 2026",
+    slug: "end-of-year-celebration",
+    category: "Party",
+    date: "2026-12-31",
+    time: "20:00",
+    location: "Grand Ballroom, London",
+    coverImage: "/neon-party-club-nightlife.jpg",
+    priceFrom: 85,
+    ticketTiers: [
+      { name: "Regular", price: 85, capacity: 200, remaining: 78 },
+      { name: "VIP", price: 150, capacity: 50, remaining: 15 },
+    ],
+    shortDescription: "Ring in the new year with live music, dinner, and spectacular fireworks display.",
+    ageRestriction: "18+",
+    featured: true,
+  },
+  {
+    title: "Mountain Trekking Adventure",
+    slug: "mountain-trekking-adventure",
+    category: "Outdoor",
+    date: "2026-03-15",
+    time: "07:00",
+    location: "Lake District National Park",
+    coverImage: "/stadium-concert-night-lights.jpg",
+    priceFrom: 45,
+    ticketTiers: [{ name: "Regular", price: 45, capacity: 25, remaining: 8 }],
+    shortDescription: "Full day guided trek through stunning mountain trails. Equipment and lunch included.",
+    ageRestriction: "16+",
+    featured: true,
+  },
+  {
+    title: "Friday After Work Social",
+    slug: "friday-after-work-social",
+    category: "Meetup",
+    date: "2026-01-31",
+    time: "17:30",
+    location: "The Rooftop Bar, Birmingham",
+    coverImage: "/rooftop-party-sunset-city.jpg",
+    priceFrom: 20,
+    ticketTiers: [{ name: "Regular", price: 20, capacity: 60, remaining: 35 }],
+    shortDescription: "Unwind after a long week with drinks, music, and networking in a relaxed rooftop setting.",
+    ageRestriction: "18+",
+    featured: false,
+  },
+]
+
+export const MOCK_USERS: User[] = [
+  {
+    id: "1",
+    name: "Demo User",
+    email: "demo@example.com",
+    password: "password123",
+  },
+]
